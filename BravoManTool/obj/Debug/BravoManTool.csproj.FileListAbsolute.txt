@@ -1,0 +1,6 @@
+D:\Bravo\BravoManTools\BravoManTools\BravoManTool\bin\Debug\BravoManTool.dll
+D:\Bravo\BravoManTools\BravoManTools\BravoManTool\bin\Debug\BravoManTool.pdb
+D:\Bravo\BravoManTools\BravoManTools\BravoManTool\obj\Debug\BravoManTool.csproj.CoreCompileInputs.cache
+D:\Bravo\BravoManTools\BravoManTools\BravoManTool\obj\Debug\BravoManTool.dll
+D:\Bravo\BravoManTools\BravoManTools\BravoManTool\obj\Debug\BravoManTool.pdb
+D:\Bravo\BravoManTools\BravoManTools\BravoManTool\obj\Debug\BravoManTool.csprojAssemblyReference.cache

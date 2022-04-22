@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BravoManTool", "BravoManTool\BravoManTool.csproj", "{564B0B5F-E38E-481D-918C-24E77E16DBBF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{564B0B5F-E38E-481D-918C-24E77E16DBBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{564B0B5F-E38E-481D-918C-24E77E16DBBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{564B0B5F-E38E-481D-918C-24E77E16DBBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{564B0B5F-E38E-481D-918C-24E77E16DBBF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AD67A6E2-D9B2-41F1-AF7A-4E0D1E9F7765}
+	EndGlobalSection
+EndGlobal
