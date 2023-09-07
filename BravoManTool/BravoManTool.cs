@@ -8,6 +8,7 @@ using System.Data.SqlTypes;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -260,5 +261,67 @@ namespace BravoManTool
             }
         }
 
+
+        public static void GetFileBytes(string filePath, out SqlBytes fileBytes, out SqlString resultMessage)
+        {
+            try
+            {
+                fileBytes = new SqlBytes(File.ReadAllBytes(filePath));
+                resultMessage = "OK";
+            }
+            catch (Exception ex)
+            {
+                fileBytes = null;
+                resultMessage = ex.Message;
+            }
+        }
+
+        public static void GetBase64FromFilePath(string filePath, out SqlString base64Data, out SqlString resultMessage)
+        {
+            try
+            {
+                byte[] fileBytes = File.ReadAllBytes(filePath);
+                base64Data = Convert.ToBase64String(fileBytes);
+                resultMessage = "OK";
+            }
+            catch (Exception ex)
+            {
+                base64Data = null;
+                resultMessage = ex.Message;
+            }
+        }
+
+
+        private const string SecretKey = "96BF9AFD-FD57-4BDB-8170-DB56886BD8A6"; 
+        private const string InitializationVector = "428706BF-BA4F-4BC8-96BE-FA6695D60AEB"; 
+
+        /// <summary>
+        /// Mã hóa BravoMan
+        /// </summary>
+        /// <param name="plaintext"></param>
+        /// <returns></returns>
+        [Microsoft.SqlServer.Server.SqlFunction]
+        public static SqlString BravoManEncrypt(SqlString plaintext)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(SecretKey);
+                aes.IV = Encoding.UTF8.GetBytes(InitializationVector);
+
+                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                using (MemoryStream msEncrypt = new MemoryStream())
+                {
+                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                        {
+                            swEncrypt.Write(plaintext.Value);
+                        }
+                    }
+                    return Convert.ToBase64String(msEncrypt.ToArray());
+                }
+            }
+        }
     }
 }

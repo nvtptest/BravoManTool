@@ -4,3 +4,9 @@ D:\Bravo\BravoManTools\BravoManTools\BravoManTool\obj\Debug\BravoManTool.csproj.
 D:\Bravo\BravoManTools\BravoManTools\BravoManTool\obj\Debug\BravoManTool.dll
 D:\Bravo\BravoManTools\BravoManTools\BravoManTool\obj\Debug\BravoManTool.pdb
 D:\Bravo\BravoManTools\BravoManTools\BravoManTool\obj\Debug\BravoManTool.csprojAssemblyReference.cache
+D:\zProject_DotNet\BravoManTool\BravoManTool\bin\Debug\BravoManTool.dll
+D:\zProject_DotNet\BravoManTool\BravoManTool\bin\Debug\BravoManTool.pdb
+D:\zProject_DotNet\BravoManTool\BravoManTool\obj\Debug\BravoManTool.csproj.AssemblyReference.cache
+D:\zProject_DotNet\BravoManTool\BravoManTool\obj\Debug\BravoManTool.csproj.CoreCompileInputs.cache
+D:\zProject_DotNet\BravoManTool\BravoManTool\obj\Debug\BravoManTool.dll
+D:\zProject_DotNet\BravoManTool\BravoManTool\obj\Debug\BravoManTool.pdb
