@@ -292,8 +292,8 @@ namespace BravoManTool
         }
 
 
-        private const string SecretKey = "96BF9AFD-FD57-4BDB-8170-DB56886BD8A6"; 
-        private const string InitializationVector = "428706BF-BA4F-4BC8-96BE-FA6695D60AEB"; 
+        private const string SecretKey = "B5003E2F66944CC1911171BD8E55D123"; 
+        private const string InitializationVector = "250CB18359B549BB"; 
 
         /// <summary>
         /// Mã hóa BravoMan
@@ -321,6 +321,50 @@ namespace BravoManTool
                     }
                     return Convert.ToBase64String(msEncrypt.ToArray());
                 }
+            }
+        }
+
+        /// <summary>
+        /// Chuyển file từ đường dẫn này sang đường dẫn khác
+        /// </summary>
+        /// <param name="sourceFilePath">Đường dẫn nguồn</param>
+        /// <param name="destinationFilePath">Đường dẫn đích</param>
+        /// <param name="zipFile">Có zip file không?</param>
+        /// <param name="result">Kết quả trả về, nếu thành công là OK</param>
+        [SqlProcedure]
+        public static void MoveFileFromPath(string sourceFilePath, string destinationFilePath, bool zipFile, out string result)
+        {
+            try
+            {
+                // Kiểm tra file gốc có tồn tại không
+                if (!File.Exists(sourceFilePath))
+                {
+                    result = "ERR: File gốc không tồn tại.";
+                    return;
+                }
+
+                // Xử lý zip file nếu cần
+                string tempFilePath = sourceFilePath;
+                if (zipFile)
+                {
+                    string zipPath = Path.ChangeExtension(sourceFilePath, ".zip");
+                    using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+                    {
+                        zip.CreateEntryFromFile(sourceFilePath, Path.GetFileName(sourceFilePath));
+                    }
+                    tempFilePath = zipPath;
+                }
+
+                // Chuyển file đến đường dẫn đích
+                File.Copy(tempFilePath, destinationFilePath, true);
+
+                // Đặt kết quả là OK nếu không có lỗi
+                result = "OK";
+            }
+            catch (Exception ex)
+            {
+                // Ghi lại lỗi vào biến result
+                result = "ERR: " + ex.Message;
             }
         }
     }
