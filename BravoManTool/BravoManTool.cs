@@ -367,5 +367,170 @@ namespace BravoManTool
                 result = "ERR: " + ex.Message;
             }
         }
+
+        /*
+         CREATE FUNCTION dbo.ufn_sys_CheckFileExists(@_FilePath NVARCHAR(4000))
+            RETURNS BIT
+            AS EXTERNAL NAME [BravoManTool].[BravoManTool.BravoManTool].[FileExists]
+
+            GO 
+         */
+        [SqlFunction]
+        public static SqlBoolean FileExists(SqlString filePath)
+        {
+            try
+            {
+                return File.Exists(filePath.Value);
+            }
+            catch
+            {
+                return SqlBoolean.False;
+            }
+        }
+
+        //#reason Đọc file trả ra bảng chứa FileName, FileExtension, Base64
+        /*
+         CREATE FUNCTION dbo.ufn_sys_ExtractFiles
+        (
+	        @_FilePath NVARCHAR(4000), 
+	        @_ExtractZip BIT
+        )
+        RETURNS TABLE (
+            Id INT, 
+            FileName NVARCHAR(260), 
+            FileExtension NVARCHAR(10), 
+            Base64 NVARCHAR(MAX)
+        )
+        AS EXTERNAL NAME [BravoManTool].[BravoManTool.BravoManTool].ExtractFiles;
+
+        SELECT * FROM dbo.ufn_sys_ExtractFiles('E:\AttachFile\NM_02071070_4341.zip', 1)
+         */
+        [SqlFunction(FillRowMethodName = "FillRowMethod", TableDefinition = "Id INT, FileName NVARCHAR(260), FileExtension NVARCHAR(10), Base64 NVARCHAR(MAX)")]
+        public static IEnumerable ExtractFiles(SqlString filePath, SqlBoolean extractZip)
+        {
+            string path = filePath.Value;
+
+            if (!File.Exists(path))
+            {
+                yield break;
+            }
+
+            if (extractZip.IsTrue && Path.GetExtension(path).Equals(".zip", StringComparison.OrdinalIgnoreCase))
+            {
+                using (ZipArchive archive = ZipFile.OpenRead(path))
+                {
+                    int id = 1;
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        if (entry.Length == 0) continue; // Skip directories
+
+                        using (var stream = entry.Open())
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            stream.CopyTo(memoryStream);
+                            yield return new FileDetail
+                            {
+                                Id = id++,
+                                FileName = Path.GetFileNameWithoutExtension(entry.FullName),
+                                FileExtension = string.IsNullOrEmpty(Path.GetExtension(entry.FullName)) ? "" : Path.GetExtension(entry.FullName).Substring(1),
+                                Base64 = Convert.ToBase64String(memoryStream.ToArray())
+                            };
+                        }
+                    }
+                }
+            }
+            else
+            {
+                byte[] fileContents = File.ReadAllBytes(path);
+                yield return new FileDetail
+                {
+                    Id = 1,
+                    FileName = Path.GetFileNameWithoutExtension(path),
+                    FileExtension = string.IsNullOrEmpty(Path.GetExtension(path)) ? "" : Path.GetExtension(path).Substring(1),
+                    Base64 = Convert.ToBase64String(fileContents)
+                };
+            }
+        }
+
+        public static void FillRowMethod(object fileDetailObj, out SqlInt32 id, out SqlString fileName, out SqlString fileExtension, out SqlString base64)
+        {
+            FileDetail fileDetail = (FileDetail)fileDetailObj;
+            id = fileDetail.Id;
+            fileName = new SqlString(fileDetail.FileName);
+            fileExtension = new SqlString(fileDetail.FileExtension);
+            base64 = new SqlString(fileDetail.Base64);
+        }
+
+        private class FileDetail
+        {
+            public int Id { get; set; }
+            public string FileName { get; set; }
+            public string FileExtension { get; set; }
+            public string Base64 { get; set; }
+        }
+
+
+        [SqlProcedure]
+        public static void InsertEmailFile(SqlString filePath, SqlInt32 emailQueueId, SqlBoolean extractZip)
+        {
+            try
+            {
+                if (extractZip.IsTrue && Path.GetExtension(filePath.Value).Equals(".zip", StringComparison.OrdinalIgnoreCase))
+                {
+                    using (ZipArchive archive = ZipFile.OpenRead(filePath.Value))
+                    {
+                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        {
+                            InsertFileToDatabase(emailQueueId.Value, entry.FullName, ConvertToBase64(entry));
+                        }
+                    }
+                }
+                else
+                {
+                    InsertFileToDatabase(emailQueueId.Value, Path.GetFileName(filePath.Value), ConvertFileToBase64(filePath.Value));
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions
+            }
+        }
+
+        private static void InsertFileToDatabase(int emailQueueId, string fileName, string base64)
+        {
+            string fileExtension = Path.GetExtension(fileName);
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+
+            using (SqlConnection conn = new SqlConnection("context connection=true"))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO dbo.B00EmailFile (EmailQueueId, FileName, FileExtension, Base64) VALUES (@EmailQueueId, @FileName, @FileExtension, @Base64)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@EmailQueueId", emailQueueId);
+                    cmd.Parameters.AddWithValue("@FileName", fileNameWithoutExtension);
+                    cmd.Parameters.AddWithValue("@FileExtension", fileExtension);
+                    cmd.Parameters.AddWithValue("@Base64", base64);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private static string ConvertFileToBase64(string filePath)
+        {
+            byte[] fileBytes = File.ReadAllBytes(filePath);
+            return Convert.ToBase64String(fileBytes);
+        }
+
+        private static string ConvertToBase64(ZipArchiveEntry entry)
+        {
+            using (var stream = entry.Open())
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    stream.CopyTo(memoryStream);
+                    return Convert.ToBase64String(memoryStream.ToArray());
+                }
+            }
+        }
     }
 }
