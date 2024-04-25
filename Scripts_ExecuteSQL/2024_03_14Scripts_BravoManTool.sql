@@ -25,6 +25,15 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufn_sy
 DROP FUNCTION [dbo].[ufn_sys_ExtractFiles]
 GO
 
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[usp_sys_InsertB00EmailFileFromPath]') AND type IN (N'FS', N'PC'))
+DROP PROCEDURE [dbo].usp_sys_InsertB00EmailFileFromPath
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufn_sys_CheckFileExists]') AND type IN (N'FS'))
+DROP FUNCTION [dbo].[ufn_sys_CheckFileExists]
+GO
+
+
 
 --DROP ASSEMBLY
 IF  EXISTS (SELECT * FROM sys.assemblies asms WHERE asms.name = N'BravoManTool')

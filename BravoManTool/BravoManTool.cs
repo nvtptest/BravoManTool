@@ -10,7 +10,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml;
 
 namespace BravoManTool
@@ -531,6 +533,45 @@ namespace BravoManTool
                     return Convert.ToBase64String(memoryStream.ToArray());
                 }
             }
+        }
+
+        [Microsoft.SqlServer.Server.SqlFunction]
+        public static SqlString ConvertHtmlToText(SqlString html)
+        {
+            //if (html.IsNull)
+            //    return SqlString.Null;
+
+            //string text = Regex.Replace(html.Value, @"<br\s*/?>|</p>", Environment.NewLine, RegexOptions.IgnoreCase);
+            //text = text.Replace("<p>", Environment.NewLine);
+
+            //text = Regex.Replace(text, @"<[^>]+>", "").Trim();
+
+            //text = HttpUtility.HtmlDecode(text);
+
+            //text = Regex.Replace(text, @"\s+", " ");
+
+            //return new SqlString(text);
+
+            if (html.IsNull)
+                return SqlString.Null;
+
+            // Loại bỏ các thẻ HTML và các ký tự đặc biệt khác
+            string text = Regex.Replace(html.Value, @"<[^>]+>|&nbsp;", "").Trim();
+
+            // Loại bỏ các đoạn chứa file ảnh trong thẻ <img src=
+            text = Regex.Replace(text, @"<img[^>]+>", "");
+
+            // Thay thế các thẻ <br> và <p> bằng ký tự xuống dòng
+            text = text.Replace("<br>", Environment.NewLine)
+                       .Replace("<br/>", Environment.NewLine)
+                       .Replace("<br />", Environment.NewLine)
+                       .Replace("<p>", Environment.NewLine)
+                       .Replace("</p>", Environment.NewLine);
+
+            // Loại bỏ các khoảng trắng dư thừa
+            text = Regex.Replace(text, @"\s+", " ");
+
+            return new SqlString(text);
         }
     }
 }
